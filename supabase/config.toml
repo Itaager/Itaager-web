@@ -1,0 +1,37 @@
+# Minimal Supabase CLI config. Run `supabase init` for the full template if
+# you prefer; keep the [functions.*] sections below.
+project_id = "itaager"
+
+[api]
+port = 54321
+
+[db]
+port = 54322
+major_version = 17
+
+[studio]
+port = 54323
+
+[auth]
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000/auth/confirm"]
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+enable_confirmations = true
+
+# Public endpoints: supporters don't need an account. They validate input and
+# apply their own rate limits. The callback is authenticated by signature.
+[functions.create-payment]
+verify_jwt = false
+
+[functions.payment-status]
+verify_jwt = false
+
+[functions.payment-callback]
+verify_jwt = false
+
+[functions.admin-refund]
+verify_jwt = true
+
