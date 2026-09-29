@@ -6,7 +6,8 @@ import { getSession } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { functionsUrl, supabaseAnonKey } from "@/lib/supabase/env";
 import type { ActionState, AccountStatus, CreatorApproval } from "@/lib/types";
-import { platformSettingsSchema } from "@/lib/validation";
+import { CATEGORIES, passwordSchema, platformSettingsSchema, sanitize, usernameSchema } from "@/lib/validation";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 /** Every admin action re-checks the role; RLS enforces it again in the DB. */
 async function adminContext() {
@@ -112,25 +113,69 @@ export interface NewUserInput {
   category?: string;
 }
 
-/** Creates an account through the admin-create-user Edge Function (it holds the service-role key). */
+const newUserSchema = z.object({
+  fullName: z.string().transform(sanitize).pipe(z.string().min(2, "Enter a name").max(80)),
+  username: usernameSchema,
+  email: z.email("Enter a valid email").max(120),
+  password: passwordSchema,
+  role: z.enum(["creator", "supporter", "super_admin"]),
+  category: z.enum(CATEGORIES).optional(),
+});
+
+/** Creates a confirmed account (email + password) for a super admin. */
 export async function createUser(input: NewUserInput): Promise<ActionState> {
-  const { supabase } = await adminContext();
-  const { data } = await supabase.auth.getSession();
-  if (!data.session) return { ok: false, message: "Session expired" };
+  const { supabase, adminId } = await adminContext();
+  const parsed = newUserSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, fieldErrors: parsed.error.flatten().fieldErrors };
+  const v = parsed.data;
 
-  const res = await fetch(`${functionsUrl}/admin-create-user`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", apikey: supabaseAnonKey, Authorization: `Bearer ${data.session.access_token}` },
-    body: JSON.stringify(input),
-    cache: "no-store",
-  }).catch(() => null);
-  if (!res) return { ok: false, message: "Could not reach the server. Is the admin-create-user function deployed?" };
-  const body = await res.json().catch(() => ({}));
-  if (res.status === 404) return { ok: false, message: "The admin-create-user Edge Function is not deployed yet." };
-  if (!res.ok) return { ok: false, message: body.error ?? "Could not create the account", fieldErrors: body.issues };
+  const { data: available } = await supabase.rpc("username_available", { p_username: v.username });
+  if (!available) return { ok: false, fieldErrors: { username: ["That username is taken"] } };
 
+  let admin;
+  try {
+    admin = createAdminClient();
+  } catch {
+    return { ok: false, message: "Server is missing SUPABASE_SERVICE_ROLE_KEY." };
+  }
+
+  // Admin-created accounts are confirmed immediately (no verification email).
+  const { data: created, error } = await admin.auth.admin.createUser({
+    email: v.email,
+    password: v.password,
+    email_confirm: true,
+    user_metadata: { full_name: v.fullName, username: v.username, account_type: v.role === "creator" ? "creator" : "supporter" },
+  });
+  if (error || !created.user) {
+    const taken = /already|registered|exists/i.test(error?.message ?? "");
+    return taken
+      ? { ok: false, fieldErrors: { email: ["An account with this email already exists"] } }
+      : { ok: false, message: error?.message ?? "Could not create the account" };
+  }
+  const userId = created.user.id;
+
+  // The signup trigger created the profile; promote or add a creator page as requested.
+  if (v.role === "super_admin") {
+    await admin.from("profiles").update({ role: "super_admin" }).eq("user_id", userId);
+  }
+  if (v.role === "creator") {
+    const { data: profile } = await admin.from("profiles").select("username").eq("user_id", userId).single();
+    await admin.from("creator_profiles").insert({
+      user_id: userId,
+      display_name: v.fullName,
+      username: profile?.username ?? v.username,
+      category: v.category ?? "Other",
+      // Created by an admin, so no separate review step.
+      approval_status: "approved",
+      reviewed_at: new Date().toISOString(),
+      reviewed_by: adminId,
+    });
+  }
+
+  await logAction(supabase, adminId, "create_user", "user", userId, `Created ${v.role.replace("_", " ")} @${v.username} (${v.email})`);
   revalidatePath("/admin", "layout");
-  return { ok: true, message: `Account created. They can sign in now with ${input.email}.` };
+  revalidatePath("/explore");
+  return { ok: true, message: `Account created. They can sign in now with ${v.email}.` };
 }
 
 /** Approve or reject a creator page. The database function re-checks admin rights and logs it. */
