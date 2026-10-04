@@ -7,6 +7,7 @@ import {
   BarChart3,
   CreditCard,
   FileText,
+  Files,
   Globe,
   LayoutDashboard,
   Settings,
@@ -29,6 +30,7 @@ const icons = {
   reports: BarChart3,
   logs: Activity,
   creators: FileText,
+  pages: Files,
 } satisfies Record<string, LucideIcon>;
 
 export type NavItem = { href: string; label: string; icon: keyof typeof icons; exact?: boolean };

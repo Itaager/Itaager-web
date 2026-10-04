@@ -1,3 +1,4 @@
+import { Analytics } from "@/components/site/analytics";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 
@@ -7,6 +8,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
       <SiteHeader />
       <main className="flex-1 pt-32 sm:pt-24">{children}</main>
       <SiteFooter />
+      <Analytics />
     </div>
   );
 }

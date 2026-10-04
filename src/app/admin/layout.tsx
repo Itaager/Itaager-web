@@ -10,6 +10,8 @@ const nav: NavItem[] = [
   { href: "/admin", label: "Dashboard", icon: "overview", exact: true },
   { href: "/admin/creators", label: "Creators", icon: "creators" },
   { href: "/admin/transactions", label: "Payments", icon: "payments" },
+  { href: "/admin/analytics", label: "Analytics", icon: "reports" },
+  { href: "/admin/pages", label: "Pages", icon: "pages" },
 ];
 
 const more = [

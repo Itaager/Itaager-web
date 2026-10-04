@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, BarChart3, Coffee, Heart, MessageCircle, ShieldCheck, Smartphone } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -5,8 +6,11 @@ import { LinkButton } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/misc";
 import { CoffeeCup } from "@/components/site/coffee-cup";
 import { CreatorCard } from "@/components/site/creator-card";
+import { siteUrl } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
 import type { CreatorProfile } from "@/lib/types";
+
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 export default async function LandingPage() {
   const supabase = await createClient();
@@ -19,6 +23,7 @@ export default async function LandingPage() {
 
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd() }} />
       {/* Hero -------------------------------------------------------------- */}
       <section className="relative -mt-32 overflow-hidden pt-32 sm:-mt-24 sm:pt-24">
         <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[680px] bg-gradient-to-b from-brand-soft to-transparent" />
@@ -33,7 +38,7 @@ export default async function LandingPage() {
             Support the creators <span className="text-brand">you love</span>
           </h1>
           <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-ink-2 sm:text-xl">
-            Get supported by your audience. Somali creators, developers, artists and educators can receive support in seconds.
+            <strong className="font-semibold text-ink">Itaager</strong> is where Somali creators, developers, artists and educators get supported by their audience — with EVC Plus, in seconds.
           </p>
 
           {/* Claim your page */}
@@ -221,4 +226,56 @@ function FloatingCups() {
       ))}
     </div>
   );
+}
+
+const FAQ = [
+  {
+    q: "What is Itaager?",
+    a: "Itaager is a creator-support platform for Somalia. Creators get a free public page where fans can support them with small payments using EVC Plus mobile money.",
+  },
+  {
+    q: "What does Itaager do?",
+    a: "Itaager lets supporters choose an amount, leave a message and pay a creator from their phone with EVC Plus. Creators see every payment, supporter and message in their dashboard.",
+  },
+  {
+    q: "How do I pay on Itaager?",
+    a: "Enter your EVC Plus number, approve the prompt on your phone with your PIN, and the payment is confirmed. No card or bank account is needed.",
+  },
+  {
+    q: "How much does Itaager cost?",
+    a: "Creating a page is free. A small platform fee is taken only from successful payments.",
+  },
+];
+
+/** Structured data so Google and AI assistants understand what Itaager is. */
+function jsonLd() {
+  const data = [
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      name: "Itaager",
+      url: siteUrl,
+      logo: `${siteUrl}/icon`,
+      description: FAQ[0].a,
+      areaServed: { "@type": "Country", name: "Somalia" },
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: "Itaager",
+      url: siteUrl,
+      potentialAction: {
+        "@type": "SearchAction",
+        target: `${siteUrl}/explore?q={search_term_string}`,
+        "query-input": "required name=search_term_string",
+      },
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: FAQ.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
+    },
+  ];
+  // Escape "<" so content can never close the script tag.
+  return JSON.stringify(data).replace(/</g, "\\u003c");
 }

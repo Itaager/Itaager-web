@@ -26,7 +26,8 @@ export async function generateMetadata({ params }: PageProps<"/creator/[username
   return {
     title: `Support ${creator.display_name}`,
     description: creator.bio ?? `Support ${creator.display_name} on Itaager.`,
-    openGraph: { images: creator.avatar_url ? [creator.avatar_url] : [] },
+    alternates: { canonical: `/creator/${creator.username}` },
+    openGraph: { url: `/creator/${creator.username}`, ...(creator.avatar_url ? { images: [creator.avatar_url] } : {}) },
   };
 }
 
@@ -55,8 +56,24 @@ export default async function CreatorPage({ params }: PageProps<"/creator/[usern
     ...(extraLinks ?? []),
   ].filter((l): l is { platform: string; url: string } => Boolean(l.url));
 
+  const profileLd = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    mainEntity: {
+      "@type": "Person",
+      name: creator.display_name,
+      alternateName: `@${creator.username}`,
+      description: creator.bio ?? undefined,
+      image: creator.avatar_url ?? undefined,
+      jobTitle: creator.category,
+      homeLocation: creator.location ?? undefined,
+      sameAs: links.filter((l) => /^https?:/.test(l.url)).map((l) => l.url),
+    },
+  }).replace(/</g, "\\u003c");
+
   return (
     <div>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: profileLd }} />
       {/* Cover */}
       <div className="-mt-32 h-64 bg-gradient-to-b from-brand-soft to-surface-2 sm:-mt-24 sm:h-64">
         {creator.cover_url && (

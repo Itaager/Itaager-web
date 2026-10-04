@@ -116,3 +116,18 @@ export interface AdminActivityLog {
 
 /** Shape returned by server actions used with useActionState. */
 export type ActionState = { ok: boolean; message?: string; fieldErrors?: Record<string, string[] | undefined> } | null;
+
+export type PageStatus = "draft" | "published";
+
+export interface CmsPage {
+  id: string;
+  slug: string;
+  title: string;
+  content: string;
+  meta_description: string | null;
+  status: PageStatus;
+  show_in_footer: boolean;
+  sort_order: number;
+  updated_at: string;
+  created_at: string;
+}

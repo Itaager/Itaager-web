@@ -7,12 +7,22 @@ import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
+const DESCRIPTION =
+  "Itaager is a Somali creator-support platform. Fans support creators, developers, artists, writers and educators with small payments using EVC Plus mobile money — no card needed.";
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: { default: "Itaager — Support the creators you love", template: "%s · Itaager" },
-  description:
-    "Itaager lets Somali creators, developers, artists and educators receive support from their audience through EVC Plus.",
-  openGraph: { siteName: "Itaager", type: "website" },
+  title: { default: "Itaager — Support Somali creators with EVC Plus", template: "%s · Itaager" },
+  description: DESCRIPTION,
+  applicationName: "Itaager",
+  keywords: [
+    "Itaager", "itaager.com", "support Somali creators", "Somali creators", "buy me a coffee Somalia",
+    "EVC Plus", "Hormuud", "creator support", "donate to creators", "tip creators Somalia",
+  ],
+  openGraph: { siteName: "Itaager", type: "website", url: "/", title: "Itaager — Support the creators you love", description: DESCRIPTION, locale: "en_US" },
+  twitter: { card: "summary_large_image", title: "Itaager — Support the creators you love", description: DESCRIPTION },
+  robots: { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 } },
+  verification: process.env.GOOGLE_SITE_VERIFICATION ? { google: process.env.GOOGLE_SITE_VERIFICATION } : undefined,
 };
 
 export const viewport: Viewport = {

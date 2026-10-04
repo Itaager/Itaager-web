@@ -9,7 +9,11 @@ import type { CreatorProfile } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { CATEGORIES } from "@/lib/validation";
 
-export const metadata: Metadata = { title: "Explore creators" };
+export const metadata: Metadata = {
+  title: "Creators",
+  description: "Browse Somali creators on Itaager and support their work with EVC Plus.",
+  alternates: { canonical: "/explore" },
+};
 
 export default async function ExplorePage({ searchParams }: PageProps<"/explore">) {
   const params = await searchParams;
