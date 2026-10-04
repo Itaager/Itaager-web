@@ -2,6 +2,7 @@ import Link from "next/link";
 import { LogOut } from "lucide-react";
 import { signOut } from "@/app/actions/auth";
 import { Avatar, Logo } from "@/components/ui/misc";
+import { ExcludeFromAnalytics } from "@/components/site/analytics";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { NavLinks, type NavItem } from "./nav-links";
 
@@ -54,6 +55,7 @@ export function DashboardShell({ nav, user, badge, footer, children }: ShellProp
         </div>
       </aside>
 
+      <ExcludeFromAnalytics />
       <main className="min-w-0 px-4 py-8 sm:px-6 lg:px-12">
         <div className="mx-auto max-w-6xl">{children}</div>
       </main>

@@ -22,6 +22,7 @@ export function CreatorCard({ creator }: { creator: CreatorProfile }) {
   return (
     <Link
       href={`/creator/${creator.username}`}
+      data-track={`Creator card: ${creator.display_name}`}
       className="group flex min-h-[340px] flex-col overflow-hidden rounded-2xl border border-line bg-surface transition-all duration-200 hover:-translate-y-0.5 hover:border-ink-3/40 hover:shadow-[0_16px_36px_-18px_rgba(65,137,221,0.45)]"
     >
       <div className={`relative h-24 bg-gradient-to-br ${coverFor(creator.username)}`}>

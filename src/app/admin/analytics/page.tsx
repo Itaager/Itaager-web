@@ -31,8 +31,12 @@ const regionNames = new Intl.DisplayNames(["en"], { type: "region" });
 
 function countryLabel(code: string) {
   if (!/^[A-Z]{2}$/.test(code)) return "Unknown";
-  const flag = String.fromCodePoint(...[...code].map((c) => 0x1f1e6 + c.charCodeAt(0) - 65));
-  return `${flag}  ${regionNames.of(code) ?? code}`;
+  return (
+    <span className="inline-flex items-center gap-2">
+      <span className="rounded bg-surface-3 px-1.5 py-0.5 font-mono text-[11px] font-semibold text-ink-2">{code}</span>
+      {regionNames.of(code) ?? code}
+    </span>
+  );
 }
 
 export default async function AnalyticsPage({ searchParams }: PageProps<"/admin/analytics">) {
@@ -49,7 +53,7 @@ export default async function AnalyticsPage({ searchParams }: PageProps<"/admin/
     <>
       <PageHeader
         title="Analytics"
-        description="Visitors to the public website. Locations are approximate; IP addresses are never stored."
+        description="Visitors to the public website. Your own visits (admins and creators) are not counted. City and region are estimated from the network, so they can differ from the real location; IP addresses are never stored."
         action={
           <div className="flex gap-1 rounded-lg bg-surface-2 p-1 text-sm">
             {RANGES.map((r) => (
@@ -71,8 +75,8 @@ export default async function AnalyticsPage({ searchParams }: PageProps<"/admin/
       ) : (
         <>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <StatCard label="Unique visitors" value={n(s.visitors)} icon={Users} />
-            <StatCard label="Page views" value={n(s.pageviews)} icon={Eye} />
+            <StatCard label="Unique visitors" value={n(s.visitors)} hint="Different people (browsers)" icon={Users} />
+            <StatCard label="Page views" value={n(s.pageviews)} hint="Every page opened" icon={Eye} />
             <StatCard label="Visits" value={n(s.sessions)} hint="Browser sessions" icon={Repeat} />
             <StatCard label="Clicks" value={n(s.clicks)} hint="Links and buttons" icon={MousePointerClick} />
           </div>
@@ -94,8 +98,8 @@ export default async function AnalyticsPage({ searchParams }: PageProps<"/admin/
           <div className="mt-6 grid gap-6 lg:grid-cols-2">
             <RankList title="Top pages" rows={s.pages} metric="views" unit="views" render={(r) => <span className="font-mono text-[13px]">{r.name}</span>} />
             <RankList title="Countries" rows={s.countries} metric="visitors" unit="visitors" render={(r) => countryLabel(r.name)} />
-            <RankList title="Regions" rows={s.regions} metric="visitors" unit="visitors" />
-            <RankList title="Cities" rows={s.cities} metric="visitors" unit="visitors" />
+            <RankList title="Regions (approx.)" rows={s.regions} metric="visitors" unit="visitors" />
+            <RankList title="Cities (approx.)" rows={s.cities} metric="visitors" unit="visitors" />
             <RankList title="Traffic sources" rows={s.referrers} metric="visitors" unit="visitors" />
             <RankList title="Most clicked" rows={s.top_clicks} metric="clicks" unit="clicks" render={(r) => (
               <span>
