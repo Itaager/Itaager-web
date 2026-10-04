@@ -4,7 +4,6 @@ import { ArrowRight, BarChart3, Coffee, Heart, MessageCircle, ShieldCheck, Smart
 import type { LucideIcon } from "lucide-react";
 import { LinkButton } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/misc";
-import { CoffeeCup } from "@/components/site/coffee-cup";
 import { CreatorCard } from "@/components/site/creator-card";
 import { siteUrl } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
@@ -29,7 +28,15 @@ export default async function LandingPage() {
         <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[680px] bg-gradient-to-b from-brand-soft to-transparent" />
         <FloatingCups />
         <div className="relative mx-auto max-w-4xl px-4 pb-16 pt-14 text-center sm:px-6 md:pt-20">
-          <CoffeeCup className="mx-auto mb-4 size-24 animate-rise" />
+          <div className="mb-5 animate-rise">
+            <span className="inline-flex items-center gap-2.5 rounded-full border border-brand/30 bg-brand-soft px-4 py-2 text-sm font-semibold text-brand-strong">
+              <span className="relative flex size-2.5" aria-hidden>
+                <span className="absolute inline-flex size-full animate-ping rounded-full bg-brand opacity-60" />
+                <span className="relative inline-flex size-2.5 rounded-full bg-brand" />
+              </span>
+              Coming soon · Insha Allah
+            </span>
+          </div>
           <span className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-1.5 text-sm text-ink-2">
             <Smartphone className="size-4 text-ink-3" aria-hidden />
             Payments with EVC Plus
